@@ -1,0 +1,68 @@
+//Get the name, address, email or any other necessary fields to merge in the Zoho Sign Document
+record = zoho.crm.getRecordById("***ZOHO CRM RECORD","***RECORD ID***");
+name = record.get("***NAME FIELD***");
+street = record.get("Shipping_Street");
+state = record.get("Shipping_State");
+city = record.get("Shipping_City");
+code = record.get("Shipping_Code");
+nameaddress = name + "\n" + street + ", " + state + "," + "\n" + city + ", " + code;
+email = record.get("***EMAIL FIELD***");
+
+//Making a parameter map to create a Zoho Sign document with prefilled fields using a Zoho Sign Template - Note: You first need to create a template in Zoho Sign
+actionMap = Map();
+fieldTextData = Map();
+fieldTextData.put("Name and Address",nameaddress);
+actionMap.put("field_data",{"field_text_data":fieldTextData});
+eachActionMap1 = Map();
+eachActionMap1.put("recipient_name",name);
+eachActionMap1.put("recipient_email",email);
+eachActionMap1.put("action_type","SIGN");
+eachActionMap1.put("action_id","111430000000143036");
+eachActionMap1.put("role","Reviewer");
+eachActionMap1.put("verify_recipient","false");
+fieldList = List();
+fieldList.add(eachActionMap1);
+actionMap.put("actions",fieldList);
+submitMap = Map();
+submitMap.put("templates",actionMap);
+parameters = Map();
+parameters.put("is_quicksend","true");
+parameters.put("data",submitMap);
+
+//Send the Zoho Sign Template with the pre-filled fields to the desired recipient/ recipients
+response = zoho.sign.createUsingTemplate("***ZOHO SIGN TEMPLATE ID***",parameters);
+
+//Get the Template Name - used as the name for the record in the "ZohoSign Documents" module in Zoho CRM later
+template = zoho.sign.getTemplateById("***ZOHO SIGN TEMPLATE ID***"");
+templatename = template.get("templates").get("template_name");
+
+//Get the Zoho Sign Document ID
+requests = response.get("requests");
+docs = requests.get("document_ids");
+docinfo = docs.get(0);
+docid = docinfo.get("document_id");
+
+//Get the Zoho Sign Request ID
+reqid = requests.get("request_id");
+docinfo = docs.get(0);
+docid = docinfo.get("document_id");
+
+//Create Map for CRM Record - ZohoSign Documents
+recordmap = Map();
+recordmap.put("Name",templatename);
+recordmap.put("zohosign__Account",accountid);
+recordmap.put("zohosign__Deal",dealid);
+recordmap.put("zohosign__Owner",deal.get("Owner").get("id"));
+recordmap.put("zohosign__Date_Sent",today);
+recordmap.put("zohosign__ZohoSign_Document_ID",docid);
+recordmap.put("zohosign__Module_Record_ID",dealid.toString());
+recordmap.put("Request_ID",reqid);
+recordmap.put("zohosign__Document_Deadline",today.addDay(3)); //--> This is arbitrary 
+recordmap.put("zohosign__Document_Status","Out for Signature");
+
+//Check Date and Frequency are additional fields created in the "ZohoSign Documents"" CRM Module to control the email notification triggering with a workflow rule
+recordmap.put("Check_Date",today.addDay(1));
+recordmap.put("Frequency",0);
+
+//Create a Record in the "ZohoSign Documents" module in Zoho CRM
+create = zoho.crm.createRecord("zohosign__ZohoSign_Documents",recordmap);
