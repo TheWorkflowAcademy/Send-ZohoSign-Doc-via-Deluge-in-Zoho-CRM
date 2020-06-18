@@ -1,0 +1,20 @@
+//Get the Document Status
+record = zoho.crm.getRecordById("zohosign__ZohoSign_Documents",recordid);
+requestid = record.get("Request_ID");
+document = zoho.sign.getDocumentById(requestid);
+status = document.get("requests").get("actions").get(0).get("action_status");
+
+//Validation - If document is signed, update status and sign date. Otherwise, add the Check Date and Frequency by 1 day
+if(status = "SIGNED")
+{
+	signdate = document.get("requests").get("action_time");
+	signdate = signdate.toDate("yyyy-MM-dd");
+	update1 = zoho.crm.updateRecord("zohosign__ZohoSign_Documents",recordid,{"zohosign__Document_Status":status});
+	update2 = zoho.crm.updateRecord("zohosign__ZohoSign_Documents",recordid,{"zohosign__Date_Completed":signdate});
+}
+else
+{
+	frequency = record.get("Frequency") + 1;
+	update3 = zoho.crm.updateRecord("zohosign__ZohoSign_Documents",recordid,{"Check_Date":today.addDay(1)});
+	update4 = zoho.crm.updateRecord("zohosign__ZohoSign_Documents",recordid,{"Frequency":frequency});
+}
