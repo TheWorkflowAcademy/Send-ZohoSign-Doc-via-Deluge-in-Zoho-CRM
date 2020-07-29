@@ -18,7 +18,7 @@ This script works in the following order:
 2. Create a ZohoSign Document to be sent to the relevant recipient(s).
 3. Create a **ZohoSign Documents** module with relevant fields filled up.
 
-```
+```javascript
 //Get the name, address, email or any other necessary fields to merge in the Zoho Sign Document
 record = zoho.crm.getRecordById("***ZOHO CRM RECORD","***RECORD ID***");
 name = record.get("***NAME FIELD***");
@@ -118,7 +118,7 @@ This script works in the following order:
         * Check Date: +1 (this keeps the workflow running if the Document doesn't get signed)
         * Frequency: +1 (this keeps count of the number of times the function is run - used as a controller in workflow)
 
-```
+```javascript
 //Get the Document Status
 record = zoho.crm.getRecordById("zohosign__ZohoSign_Documents",recordid);
 requestid = record.get("Request_ID");
